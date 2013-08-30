@@ -1,7 +1,7 @@
 #!/bin/sh
 #Written by Wang Shilong <wangsl.fnst@cn.fujitsu.com>
 
-MAIN_URL="https://patchwork.kernel.org/project/linux-btrfs/list/"
+MAIN_URL="https://patchwork.kernel.org/project/linux-nfs/list/"
 PATCH_URL="https://patchwork.kernel.org/patch/"
 LOG_DIR="/tmp/auto_check"
 TIME_OUT=60
@@ -13,7 +13,7 @@ wget -O out $MAIN_URL -T $TIME_OUT || exit 1
 grep '/patch/' out | awk -F '/' '{print $3}' >patch_index
 
 touch send_index
-sort patch_index send_index | uniq -u >out1
+grep -F -v -f send_index patch_index | uniq -u >out1
 rm -f patch_index && mv out1 patch_index
 rm -f out || echo "rm out fails"
 
@@ -36,14 +36,11 @@ do
 	echo $line >> send_index
 
 	to=`less $LOG_DIR/$line | grep From: | awk -F ':' '{print $2}'`
-	Subject=`less $LOG_DIR/$line | grep Subject: | awk -F ':' '{print $2":"$3}'`
+	Subject=`less $LOG_DIR/$line | grep Subject: | awk -F 'Subject:' '{print $2}' `
 	name=`echo $to| awk -F ':' '{print $2}'| awk -F '<' '{print $1}'`
 	echo $to
 	echo $Subject
-	msg="Hello $name,\n"
-	msg=$msg""`less $LOG_DIR/$line""_fail`
-	msg=$msg"\n Thanks, Wang\n\n"
-	msg="This is an automated mail, any problems please refer to wangsl.fnst@cn.fujitsu.com"
-	#echo $msg
-	sh ./mail.sh "wangsl.fnst@cn.fujitsu.com" "Re: $Subject" "$msg"
+	msg=`less $LOG_DIR/$line""_fail`
+	echo $msg
+	sh ./mail.sh "wangshilong1991@gmail.com" "Re: $Subject" "$msg"
 done < ./check_fail
