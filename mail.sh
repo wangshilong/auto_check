@@ -6,11 +6,12 @@ email()
  	LANG=en_US.UTF8 mailx -t<<EOF
 From: $email_addr
 TO: $1
-Subject: $2
+CC: $2
+Subject: $3
 
-$3 
+$4
 EOF
 }
 
-email "$1" "$2" "$3"
+email "$1" "$2" "$3" "$4"
 
